@@ -1,0 +1,28 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.Python
+*.egg-info/
+
+# Entornos virtuales
+venv/
+env/
+.env
+
+# Archivos de datos sensibles (¡importante para Munchy!)
+*.xlsx
+*.xls
+*.csv
+
+# Streamlit
+.streamlit/secrets.toml
+
+# Sistema operativo
+.DS_Store
+Thumbs.db
+
+# IDEs
+.vscode/
+.idea/
+*.pyc

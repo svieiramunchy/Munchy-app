@@ -1,4 +1,4 @@
-streamlit==1.32.0
+streamlit
 pandas
 numpy
 folium
@@ -7,4 +7,3 @@ scikit-learn
 geopy
 plotly
 openpyxl
-re

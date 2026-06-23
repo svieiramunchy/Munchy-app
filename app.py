@@ -51,31 +51,51 @@ st.sidebar.markdown("---")
 
 munchy_style = """
 <style>
+/* ── FONDO PRINCIPAL Y SIDEBAR — siempre fijos ────────────── */
 .stApp { background-color: #0F2260 !important; }
-h1, h2, h3, h4, h5, h6, p, label, span, .stMarkdown { color: #FFFFFF !important; }
-section[data-testid="stSidebar"] { background-color: #0A1846 !important; }
-
-/* ── FILE UPLOADER ─────────────────────────────────────── */
-[data-testid="stFileUploader"] {
-    background-color: rgba(255, 255, 255, 0.05) !important;
-    border: 1.5px dashed rgba(255, 255, 255, 0.4) !important;
-    border-radius: 8px !important;
-    padding: 8px !important;
-}
-[data-testid="stFileUploader"] label {
+.stApp h1, .stApp h2, .stApp h3, .stApp h4, .stApp h5, .stApp h6,
+.stApp p, .stApp label, .stApp span,
+.stApp .stMarkdown, .stApp .stMarkdown p,
+.stApp [data-testid="stText"],
+.stApp [data-testid="stMetricLabel"],
+.stApp [data-testid="stMetricValue"],
+.stApp [data-testid="stCaptionContainer"] {
     color: #FFFFFF !important;
 }
-[data-testid="stFileUploader"] p,
-[data-testid="stFileUploader"] span,
-[data-testid="stFileUploader"] small {
-    color: #CCCCCC !important;
-}
-[data-testid="stFileUploadDropzone"] {
-    background-color: rgba(255, 255, 255, 0.03) !important;
-    border: none !important;
+section[data-testid="stSidebar"] { background-color: #0A1846 !important; }
+
+/* ── MENÚ SUPERIOR — sigue el tema ───────────────────────── */
+header[data-testid="stHeader"] {
+    background-color: transparent !important;
 }
 
-/* ── BOTONES ───────────────────────────────────────────── */
+/* ── ELEMENTOS ADAPTABLES AL TEMA (Light/Dark Mode) ──────── */
+/* Contenido interno del File Uploader, Spinners y Botón Descarga */
+.stApp [data-testid="stFileUploader"] p,
+.stApp [data-testid="stFileUploader"] span,
+.stApp [data-testid="stFileUploader"] small,
+.stApp [data-testid="stFileUploadDropzone"] *,
+.stApp [data-testid="stFileUploadDropzone"] p,
+.stApp [data-testid="stFileUploadDropzone"] span,
+.stApp [data-testid="stSpinner"] *,
+.stApp [data-testid="stSpinner"] p,
+.stApp [data-testid="stSpinner"] span,
+.stApp [data-testid="stDownloadButton"] button *,
+.stApp [data-testid="stDownloadButton"] button p,
+.stApp [data-testid="stDownloadButton"] button span {
+    color: var(--text-color) !important;
+}
+
+/* ── TÍTULOS DE LOS FILE UPLOADERS — siempre blancos ──────── */
+/* Esto aísla el título del File Uploader para que no sea negro en Light Mode */
+.stApp [data-testid="stFileUploader"] > label,
+.stApp [data-testid="stFileUploader"] > label p,
+.stApp [data-testid="stFileUploader"] > label span,
+.stApp [data-testid="stFileUploader"] > label * {
+    color: #FFFFFF !important;
+}
+
+/* ── BOTONES DE LA APP — siempre rojos ────────────────────── */
 div.stButton > button {
     background-color: rgba(230, 15, 41, 0.7) !important;
     color: #FFFFFF !important;

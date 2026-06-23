@@ -1375,43 +1375,10 @@ def renderizar_dimensionamiento(df_maestro):
                     list(datos_region.values())[0] if datos_region else None
                 ),
             }
-            st.write("CENDIS data:", datos_cendis)
-            st.write("REGION data:", datos_region)
-            st.write("Combinados:", {k: v is not None for k, v in datos_combinados.items()})
+    
             st.session_state['_dim_factores']  = calcular_factores_crecimiento(datos_combinados)
             st.session_state['_dim_cache_key'] = cache_key
     factores = st.session_state['_dim_factores']
-
-    # ── FACTORES CALCULADOS ───────────────────────────────────────────
-    with st.expander("🔍 Debug — Factores de Crecimiento", expanded=False):
-        for clave, datos in factores.items():
-            st.markdown(f"##### {clave}")
-            if datos.get('error'):
-                st.error(datos['error'])
-            else:
-                método = datos.get('método', 'N/A')
-                st.caption(f"**Método**: {método}")
-
-                if método == 'HÍBRIDO':
-                    st.json({
-                        'Método':                'HÍBRIDO (total + promedio)',
-                        'Promedio_Mensual_%':    datos['factor_pct'],
-                        'Crecimiento_Total_%':   datos.get('crecimiento_total', 0),
-                        'Desde':                 datos.get('primer_mes', ''),
-                        'Hasta':                 datos.get('ultimo_mes', ''),
-                        'Valor_Inicial_Kg':      datos.get('valor_primer_mes', 0),
-                        'Valor_Final_Kg':        datos.get('valor_ultimo_mes', 0),
-                        'N_Meses':               datos.get('n_meses_secuenciales', 0),
-                    })
-                else:  # AÑO_VS_AÑO
-                    st.json({
-                        'Método':               'AÑO vs AÑO (mismo mes, diferentes años)',
-                        'Años_Usados':          datos.get('años_usados', []),
-                        'Años_Comparados':      datos.get('años_comparados', []),
-                        'Crecimientos_Anuales': datos.get('crecimientos_anuales', {}),
-                        'N_Años_Comparados':    datos.get('n_años_comparados', 0),
-                        'Factor_%_Final':       datos['factor_pct'],
-                    })
 
     st.markdown("### Factores de Crecimiento Calculados")
     factor_region_pct = factores.get('REGION', {}).get('factor_pct', 0.0)

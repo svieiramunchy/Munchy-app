@@ -17,6 +17,18 @@ from utils_munchy import (
     CIUDADES_VENEZUELA,
     _distancia,
 )
+
+def fmt_num(valor, decimales=0):
+    """Formatea números al estilo latinoamericano: miles con punto, decimales con coma."""
+    if decimales == 0:
+        return f"{valor:,.0f}".replace(",", ".")
+    else:
+        s = f"{valor:,.{decimales}f}"
+        s = s.replace(",", "X").replace(".", ",").replace("X", ".")
+        return s
+    
+def fmt_pct(valor, decimales=1):
+    return str(round(valor, decimales)).replace('.', ',')
 # =====================================================================
 # CONSTANTES
 # =====================================================================
@@ -1309,14 +1321,14 @@ def calcular_dimensionamiento(factores, region_o_estado, modo, bultos_por_mes_us
 # =====================================================================
 def renderizar_dimensionamiento(df_maestro):
     st.markdown("---")
-    st.markdown("## 📐 Herramienta de Dimensionamiento del CenDis")
+    st.markdown("## Herramienta de Dimensionamiento del CenDis")
     st.caption(
         "Calcula los m² recomendados basándose en el crecimiento "
         "histórico de la región y del CenDis de referencia."
     )
 
     # ── ARCHIVOS DE CRECIMIENTO ───────────────────────────────────────
-    st.markdown("### 📂 Archivos de Crecimiento")
+    st.markdown("### Archivos de Crecimiento")
     col_c1, col_c2 = st.columns(2)
     with col_c1:
         arch_crec_cendis = st.file_uploader(
@@ -1401,7 +1413,7 @@ def renderizar_dimensionamiento(df_maestro):
                         'Factor_%_Final':       datos['factor_pct'],
                     })
 
-    st.markdown("### 📊 Factores de Crecimiento Calculados")
+    st.markdown("### Factores de Crecimiento Calculados")
     factor_region_pct = factores.get('REGION', {}).get('factor_pct', 0.0)
     factor_cendis_pct = factores.get('CENDIS', {}).get('factor_pct', 0.0)
     crec_total_cendis = factores.get('CENDIS', {}).get('crecimiento_total', 0.0)
@@ -1412,7 +1424,7 @@ def renderizar_dimensionamiento(df_maestro):
     col_f1, col_f2, col_f3 = st.columns(3)
     with col_f1:
         año_r = factores.get('REGION', {})
-        st.metric("📍 Crec. Región",    f"+{factor_region_pct:.1f}%",
+        st.metric("📍 Crec. Región",    f"+{fmt_pct(factor_region_pct)}%",
             delta=f"{año_r.get('año_base','')} → {año_r.get('año_actual','')}")
 
     with col_f2:
@@ -1421,21 +1433,21 @@ def renderizar_dimensionamiento(df_maestro):
 
         st.metric(
             "🏭 Crec. CenDis BQTO (Promedio)",
-            f"+{factor_promedio_pct:.1f}%",
+            f"+{fmt_pct(factor_promedio_pct)}%",
             # ✅ Usar primer_mes y ultimo_mes (no año_base → año_actual)
             delta=f"{año_c.get('primer_mes', '')} → {año_c.get('ultimo_mes', '')}"
         )
-        st.caption(f"📈 **Crecimiento total**: +{crec_total_cendis:.1f}% desde apertura")
+        st.caption(f"📈 **Crecimiento total**: +{fmt_pct(crec_total_cendis)}% desde apertura")
     
     with col_f3:
-        st.metric("✖️ Multiplicador Total", f"×{multiplicador:.4f}",
+        st.metric("✖️ Multiplicador Total", f"×{fmt_pct(multiplicador, 4)}",
             delta=f"+{round((multiplicador-1)*100,1)}% sobre volumen base")
-        st.caption(f"💡 Usa promedio mensual (+{factor_cendis_pct:.1f}%) para dimensionamiento")
+        st.caption(f"💡 Usa promedio mensual (+{fmt_pct(factor_cendis_pct)}%) para dimensionamiento")
 
     st.markdown("---")
 
     # ── PARÁMETROS ────────────────────────────────────────────────────
-    st.markdown("### ⚙️ Parámetros del Dimensionamiento")
+    st.markdown("### Parámetros del Dimensionamiento")
     col_d1, _ = st.columns(2)
     with col_d1:
         modo_dim = st.radio(
@@ -1464,7 +1476,7 @@ def renderizar_dimensionamiento(df_maestro):
         st.info(f"📍 **{region_dim}** comprende: {subregion_txt}")
 
     # ── INPUT DE BULTOS POR MES ───────────────────────────────────────
-    st.markdown("### 📦 Bultos/Cajas por Mes")
+    st.markdown("### Bultos/Cajas por Mes")
     st.caption(
         "Ingresa el total de bultos/cajas de la región para cada mes. "
         "Deja en 0 los meses sin data — el sistema usará solo los meses con valores."
@@ -1492,8 +1504,8 @@ def renderizar_dimensionamiento(df_maestro):
         total_bultos = sum(v for v in bultos_por_mes.values() if v is not None)
         st.caption(
             f"✅ {meses_ingresados} meses con data | "
-            f"Total período: {total_bultos:,.0f} bultos | "
-            f"Promedio mensual: {total_bultos/meses_ingresados:,.0f} bultos"
+            f"Total período: {fmt_num(total_bultos)} bultos | "
+            f"Promedio mensual: {fmt_num(round(total_bultos/meses_ingresados))} bultos"
         )
     else:
         st.caption("💡 Ingresa los valores de al menos 1 mes para calcular.")
@@ -1530,24 +1542,23 @@ def renderizar_dimensionamiento(df_maestro):
     col_r1, col_r2, col_r3, col_r4 = st.columns(4)
     with col_r1:
         st.metric("📦 Bultos Base",
-                  f"{resultado_dim['bultos_base']:,.0f}",
-                  delta=f"Promedio top {len(resultado_dim['meses_pico'])} meses")
+              f"{fmt_num(resultado_dim['bultos_base'])}",
+              delta=f"Promedio top {len(resultado_dim['meses_pico'])} meses")
     with col_r2:
         st.metric("📦 Bultos Proyectados",
-                  f"{resultado_dim['bultos_proyectados']:,.0f}",
+                  f"{fmt_num(resultado_dim['bultos_proyectados'])}",
                   delta=f"×{resultado_dim['multiplicador']}")
     with col_r3:
-        st.metric("🏗️ Pallets Necesarios", f"{resultado_dim['pallets']:,}")
+        st.metric("🏗️ Pallets Necesarios", f"{fmt_num(resultado_dim['pallets'])}")
     with col_r4:
         st.metric("📐 M² Recomendados",
-                  f"{resultado_dim['m2_recomendados']:,.1f} m²",
+                  f"{fmt_num(resultado_dim['m2_recomendados'], 1)} m²",
                   delta="Piso, sin racks")
-
     with st.expander("🔍 Ver desglose del cálculo", expanded=False):
         st.markdown("##### 📊 Top 3 meses pico")
         st.dataframe(
             pd.DataFrame([
-                {'Mes': mes, 'Bultos/Cajas': f"{bultos:,.0f}"}
+                {'Mes': mes, 'Bultos/Cajas': fmt_num(bultos)}
                 for mes, bultos in resultado_dim['detalle_meses'].items()
             ]),
             use_container_width=True, hide_index=True
@@ -1557,18 +1568,18 @@ def renderizar_dimensionamiento(df_maestro):
 DIMENSIONAMIENTO — {region_dim}
 {'='*45}
 Meses Pico (top 3):           {meses_pico_str}
-Bultos Base (promedio top 3):  {resultado_dim['bultos_base']:,.0f} bultos
+Bultos Base (promedio top 3):  {fmt_num(resultado_dim['bultos_base'])} bultos
 Factor Crecimiento Región:    +{resultado_dim['factor_region_pct']:.2f}%
 Factor Crecimiento CenDis:    +{resultado_dim['factor_cendis_pct']:.2f}%
 Multiplicador Total:          ×{resultado_dim['multiplicador']:.4f}
-Bultos Proyectados:            {resultado_dim['bultos_proyectados']:,.0f} bultos
-Pallets Necesarios:            {resultado_dim['pallets']:,}
-  = ceil({resultado_dim['bultos_proyectados']:,.0f} ÷ 50)
-M² Almacenaje (piso):          {resultado_dim['m2_almacenaje']:,.1f} m²
-  = {resultado_dim['pallets']:,} pallets × 1.44 m²/pallet
-M² Tránsito (+20%):            {resultado_dim['m2_transito']:,.1f} m²
+Bultos Proyectados:            {fmt_num(resultado_dim['bultos_proyectados'])} bultos
+Pallets Necesarios:            {fmt_num(resultado_dim['pallets'])}
+  = ceil({fmt_num(resultado_dim['bultos_proyectados'])} ÷ 50)
+M² Almacenaje (piso):          {fmt_num(resultado_dim['m2_almacenaje'], 1)} m²
+  = {fmt_num(resultado_dim['pallets'])} pallets × 1,44 m²/pallet
+M² Tránsito (+20%):            {fmt_num(resultado_dim['m2_transito'], 1)} m²
 ─────────────────────────────────────────────
-M² TOTALES Recomendados:       {resultado_dim['m2_recomendados']:,.1f} m²
+M² TOTALES Recomendados:       {fmt_num(resultado_dim['m2_recomendados'], 1)} m²
 """, language='text')
 # =====================================================================
 # UI — MÓDULO PRINCIPAL
@@ -1585,20 +1596,20 @@ def renderizar_objetivo1(resultado):
     viajes_avg = resultado['viajes_promedio']
     detalle    = resultado['detalle_por_mes']
 
-    st.markdown(f"### 🏭 Costo Red Actual — Región {region}")
+    st.markdown(f"### Costo Red Actual — Región {region}")
     st.caption(
         f"Ruta: **{tipo_ruta}** | "
         f"Meses analizados: **{', '.join([NOMBRE_MES[m] for m in meses])}**"
     )
     col1, col2, col3 = st.columns(3)
     with col1:
-        st.metric("💸 Costo Promedio Mensual", f"${costo_prom:,.0f}")
+        st.metric("💸 Costo Promedio Mensual", f"${fmt_num(costo_prom)}")
     with col2:
         st.metric("🚛 Viajes Promedio/Mes",    f"{sum(viajes_avg.values())}")
     with col3:
         st.metric("📅 Meses con Datos",        f"{len(meses)}")
 
-    st.markdown("#### 📊 Viajes y Costos por Mes")
+    st.markdown("#### Viajes y Costos por Mes")
     filas = []
     for mes in meses:
         fila = {'Mes': NOMBRE_MES[mes]}
@@ -1608,13 +1619,13 @@ def renderizar_objetivo1(resultado):
             fila[vehiculo] = v
             total_viajes  += v
         fila['Total Viajes'] = total_viajes
-        fila['Costo ($)']    = f"${costo_mes.get(mes, 0):,.0f}"
+        fila['Costo ($)']    = f"${fmt_num(costo_mes.get(mes, 0))}"
         filas.append(fila)
     fila_prom = {'Mes': '📊 Promedio'}
     for vehiculo in VEHICULOS:
         fila_prom[vehiculo] = viajes_avg.get(vehiculo, 0)
     fila_prom['Total Viajes'] = sum(viajes_avg.values())
-    fila_prom['Costo ($)']    = f"${costo_prom:,.0f}"
+    fila_prom['Costo ($)']    = f"${fmt_num(costo_prom)}"
     filas.append(fila_prom)
     st.dataframe(pd.DataFrame(filas), use_container_width=True, hide_index=True)
 
@@ -1630,18 +1641,18 @@ def renderizar_objetivo1(resultado):
                     filas_det.append({
                         'Vehículo':        vehiculo,
                         'Viajes':          datos.get('Viajes', 0),
-                        'Tarifa ($)':      f"${datos.get('Tarifa', 0):,.2f}",
-                        'Caleta ($)':      f"${datos.get('Caleta', 0):.0f}",
-                        'Costo Total ($)': f"${datos.get('Costo', 0):,.0f}",
+                        'Tarifa ($)':      f"${fmt_num(datos.get('Tarifa', 0), 2)}",
+                        'Caleta ($)':      f"${fmt_num(datos.get('Caleta', 0))}",
+                        'Costo Total ($)': f"${fmt_num(datos.get('Costo', 0))}",
                     })
                 else:
                     filas_det.append({
                         'Vehículo':        vehiculo,
                         'Viajes T1':       datos.get('Viajes_T1', 0),
-                        'Costo T1 ($)':    f"${datos.get('Costo_T1', 0):,.0f}",
+                        'Costo T1 ($)':    f"${fmt_num(datos.get('Costo_T1', 0))}",
                         'Viajes T2':       datos.get('Viajes_T2', 0),
-                        'Costo T2 ($)':    f"${datos.get('Costo_T2', 0):,.0f}",
-                        'Costo Total ($)': f"${datos.get('Costo', 0):,.0f}",
+                        'Costo T2 ($)':    f"${fmt_num(datos.get('Costo_T2', 0))}",
+                        'Costo Total ($)': f"${fmt_num(datos.get('Costo', 0))}",
                     })
             st.dataframe(
                 pd.DataFrame(filas_det),
@@ -1658,13 +1669,14 @@ def modulo_analisis_financiero(
     lista_cendis_existentes,
     archivo_maestro=None,
 ):
-    st.markdown("## 💰 Análisis Financiero — Red Actual vs Red Propuesta")
+    st.markdown("## Análisis Financiero — Red Actual vs Red Propuesta")
     st.caption(
         "Comparación de costos logísticos basada en "
         "tabuladores reales y viajes históricos."
     )
+
     # PASO 1 — CARGA DE ARCHIVOS
-    st.markdown("### 📂 Paso 1 — Carga de Archivos")
+    st.markdown("### Paso 1 — Carga de Archivos")
     col_u1, col_u2, col_u3 = st.columns(3)
     with col_u1:
         arch_viajes = st.file_uploader(
@@ -1681,6 +1693,7 @@ def modulo_analisis_financiero(
             "📊 Consolidado_Cendis.xlsx",
             type=['xlsx'], key="fin_consol"
         )
+
     archivos_ok = all([arch_viajes, arch_tab, arch_consol])
     if not archivos_ok:
         faltantes = []
@@ -1689,20 +1702,23 @@ def modulo_analisis_financiero(
         if not arch_consol: faltantes.append("Consolidado_Cendis")
         st.warning(f"⚠️ Faltan archivos: {', '.join(faltantes)}")
         return
-    df_viajes    = pd.DataFrame()
-    tabs         = {}
-    tab_err      = []
-    consolidado  = None
-    consol_msg   = ""
-    tabs_co      = pd.DataFrame()
-    co_msg       = "Sin archivo Maestro"
-    costo_km     = {}
-    meses_ok     = []
-    meses_err    = []
+
+    df_viajes   = pd.DataFrame()
+    tabs        = {}
+    tab_err     = []
+    consolidado = None
+    consol_msg  = ""
+    tabs_co     = pd.DataFrame()
+    co_msg      = "Sin archivo Maestro"
+    costo_km    = {}
+    meses_ok    = []
+    meses_err   = []
+
     with st.spinner("Cargando archivos..."):
         df_viajes, meses_ok, meses_err = cargar_numero_viajes(arch_viajes)
         tabs, tab_err                   = cargar_tabulador(arch_tab)
         consolidado, consol_msg         = cargar_consolidado(arch_consol)
+
     # ── CENTRO-ORIENTE: Maestro primero, tabulador como fallback ──
     if archivo_maestro is not None:
         tabs_co, co_msg = cargar_centro_oriente(archivo_maestro)
@@ -1736,60 +1752,57 @@ def modulo_analisis_financiero(
     if consolidado is None or df_viajes.empty:
         st.error("❌ Hay archivos con problemas. Revisa los Debug.")
         return
-        
+
     # Aviso separado si no hay CENTRO-ORIENTE (no bloquea)
     if tabs_co.empty:
         st.warning(
             "⚠️ No se encontró CENTRO-ORIENTE en el Maestro. "
             "Los cálculos de tarifa por distancia no estarán disponibles."
         )
-    
+
     st.markdown("---")
-    
-    # DEBUG 1 — VIAJES (sin duplicar advertencias)
-    with st.expander("🔍 Debug 1 — Numero_Viajes", expanded=False):
-        st.markdown("##### ✅ Meses leídos")
-        for m in meses_ok:
-            st.caption(m)
-        
-        # Mostrar solo errores que NO son advertencias de decimales
-    errores_otros = [e for e in meses_err if e not in advertencias_decimales]
-    if errores_otros:
-        st.markdown("##### ⚠️ Otros Errores")
-        for e in errores_otros:
-            st.warning(e)
-    
-    if not df_viajes.empty:
-        st.markdown("##### 📊 Viajes por Subregión Original")
-        for subregion in sorted(df_viajes['Subregion'].unique()):
-            region_grande = df_viajes[
-                df_viajes['Subregion'] == subregion
-            ]['Region'].iloc[0]
-            
-            st.markdown(f"**{subregion}** → Región: {region_grande}")
-            
-            df_sub = df_viajes[df_viajes['Subregion'] == subregion].copy()
-            df_sub['Mes_Nombre'] = df_sub['Mes'].map(NOMBRE_MES)
-            cols_show = ['Mes_Nombre'] + [
-                v for v in VEHICULOS if v in df_sub.columns
-            ]
-            st.dataframe(
-                df_sub[cols_show].rename(columns={'Mes_Nombre':'Mes'}),
-                use_container_width=True,
-                hide_index=True
-            )
+    mostrar_debug = st.toggle("🔍 Mostrar información de diagnóstico", value=False, key="fin_mostrar_debug")
+    # DEBUG 1 — VIAJES
+    if mostrar_debug:
+        with st.expander("🔍 Debug 1 — Numero_Viajes", expanded=False):
+            st.markdown("##### ✅ Meses leídos")
+            for m in meses_ok:
+                st.caption(m)
+
+        errores_otros = [e for e in meses_err if e not in advertencias_decimales]
+        if errores_otros:
+            st.markdown("##### ⚠️ Otros Errores")
+            for e in errores_otros:
+                st.warning(e)
+
+        if not df_viajes.empty:
+            st.markdown("##### 📊 Viajes por Subregión Original")
+            for subregion in sorted(df_viajes['Subregion'].unique()):
+                region_grande = df_viajes[
+                    df_viajes['Subregion'] == subregion
+                ]['Region'].iloc[0]
+                st.markdown(f"**{subregion}** → Región: {region_grande}")
+                df_sub = df_viajes[df_viajes['Subregion'] == subregion].copy()
+                df_sub['Mes_Nombre'] = df_sub['Mes'].map(NOMBRE_MES)
+                cols_show = ['Mes_Nombre'] + [v for v in VEHICULOS if v in df_sub.columns]
+                st.dataframe(
+                    df_sub[cols_show].rename(columns={'Mes_Nombre': 'Mes'}),
+                    use_container_width=True, hide_index=True
+                )
+
     # DEBUG 2 — TABULADORES
-    with st.expander("🔍 Debug 2 — Tabuladores", expanded=False):
-        if tab_err:
-            for e in tab_err:
-                st.warning(f"⚠️ {e}")
-        for nombre_tab, df_tab in tabs.items():
-            st.markdown(f"##### 📋 {nombre_tab}")
-            if df_tab.empty:
-                st.warning(f"❌ {nombre_tab} vacío")
-            else:
-                st.caption(f"{len(df_tab)} destinos cargados")
-                st.dataframe(df_tab.head(10), use_container_width=True)
+    if mostrar_debug:
+        with st.expander("🔍 Debug 2 — Tabuladores", expanded=False):
+            if tab_err:
+                for e in tab_err:
+                    st.warning(f"⚠️ {e}")
+            for nombre_tab, df_tab in tabs.items():
+                st.markdown(f"##### 📋 {nombre_tab}")
+                if df_tab.empty:
+                    st.warning(f"❌ {nombre_tab} vacío")
+                else:
+                    st.caption(f"{len(df_tab)} destinos cargados")
+                    st.dataframe(df_tab.head(10), use_container_width=True)
         st.markdown("##### 📋 CENTRO-ORIENTE (desde Maestro)")
         if tabs_co.empty:
             st.warning(f"⚠️ {co_msg}")
@@ -1807,51 +1820,59 @@ def modulo_analisis_financiero(
                     }
                     for v in VEHICULOS
                 ]),
-                use_container_width=True,
-                hide_index=True
+                use_container_width=True, hide_index=True
             )
         else:
             st.warning("❌ No se pudo calcular Costo/KM")
+
     # DEBUG 3 — CONSOLIDADO
-    with st.expander("🔍 Debug 3 — Consolidado CenDis", expanded=False):
-        if consolidado is None:
-            st.error(f"❌ {consol_msg}")
-        else:
-            st.success(consol_msg)
-            for cendis_nombre, datos in consolidado.items():
-                st.markdown(f"##### 🏭 CenDis {cendis_nombre}")
-                st.dataframe(
-                    pd.DataFrame([
-                        {'Concepto': k, 'Valor': v}
-                        for k, v in datos.items()
-                    ]),
-                    use_container_width=True,
-                    hide_index=True
-                )
-    if consolidado is None or df_viajes.empty:
-        st.error("❌ Hay archivos con problemas. Revisa los Debug.")
-        return
-    # Aviso separado si no hay CENTRO-ORIENTE (no bloquea)
-    if tabs_co.empty:
-        st.warning(
-            "⚠️ No se encontró CENTRO-ORIENTE en el Maestro. "
-            "Los cálculos de tarifa por distancia no estarán disponibles."
-        )
+    if mostrar_debug:
+        with st.expander("🔍 Debug 3 — Consolidado CenDis", expanded=False):
+            if consolidado is None:
+                st.error(f"❌ {consol_msg}")
+            else:
+                st.success(consol_msg)
+                for cendis_nombre, datos in consolidado.items():
+                    st.markdown(f"##### 🏭 CenDis {cendis_nombre}")
+                    st.dataframe(
+                        pd.DataFrame([{'Concepto': k, 'Valor': v} for k, v in datos.items()]),
+                        use_container_width=True, hide_index=True
+                    )
+
     st.markdown("---")
+
+    # ── SINCRONIZACIÓN DE REGIÓN (definir ANTES de usarlas) ──────────
+    regiones_disponibles = sorted(df_maestro['Region'].dropna().unique().tolist())
+
+    if 'region_sincronizada' not in st.session_state:
+        st.session_state['region_sincronizada'] = regiones_disponibles[1]
+
+    def sync_desde_paso2():
+        st.session_state['region_sincronizada'] = st.session_state['region_paso2']
+
+    def sync_desde_paso3():
+        st.session_state['region_sincronizada'] = st.session_state['region_paso3']
+
     # PASO 2 — OBJETIVO 1
-    st.markdown("### 🏭 Paso 2 — Costo Actual de la Red")
+    st.markdown("### Paso 2 — Costo Actual de la Red")
     col_r1, col_r2, col_r3 = st.columns(3)
     with col_r1:
-        region_sel = st.selectbox(
+        region_paso2 = st.selectbox(
             "📍 Región a analizar:",
-            options=REGIONES_DIRECTAS + REGIONES_VIA_CCS + REGIONES_VIA_BQTO,
-            key="fin_region"
+            options=regiones_disponibles,
+            index=regiones_disponibles.index(st.session_state['region_sincronizada']),
+            key="region_paso2",
+            on_change=sync_desde_paso2
         )
-        st.session_state['region_sugerida'] = region_sel
+
+    st.session_state['region_sugerida'] = region_paso2
+    value=region_paso2 in REGIONES_VIA_CCS + REGIONES_VIA_BQTO,
+    region = region_paso2
+
     with col_r2:
         pasa_cendis = st.toggle(
             "¿Hoy pasa por CenDis?",
-            value=region_sel in REGIONES_VIA_CCS + REGIONES_VIA_BQTO,
+            value=False,
             key="fin_pasa_cendis"
         )
     with col_r3:
@@ -1862,8 +1883,9 @@ def modulo_analisis_financiero(
                 options=['CCS', 'BQTO'],
                 key="fin_cual_cendis"
             )
+
     resultado_obj1, msg_obj1 = calcular_costo_actual_region(
-        region          = region_sel,
+        region          = region_paso2,
         df_viajes       = df_viajes,
         tabs_co         = tabs_co,
         tab_extra       = tabs,
@@ -1874,24 +1896,29 @@ def modulo_analisis_financiero(
     if resultado_obj1 is None:
         st.error(msg_obj1)
         return
-    with st.expander("🔍 Debug 4 — Objetivo 1 Detalle", expanded=False):
-        st.json({
-            'Region':       resultado_obj1['region'],
-            'Tipo_Ruta':    resultado_obj1['tipo_ruta'],
-            'Meses_Usados': resultado_obj1['meses_usados'],
-        })
-        st.markdown("##### Costo por Mes")
-        st.json(resultado_obj1['costo_por_mes'])
-        st.markdown("##### Viajes Promedio por Vehículo")
-        st.json(resultado_obj1['viajes_promedio'])
-        if resultado_obj1['detalle_por_mes']:
-            ultimo_mes = max(resultado_obj1['detalle_por_mes'].keys())
-            st.markdown(f"##### Detalle último mes ({NOMBRE_MES[ultimo_mes]})")
-            st.json(resultado_obj1['detalle_por_mes'][ultimo_mes])
+
+    if mostrar_debug:
+        with st.expander("🔍 Debug 4 — Objetivo 1 Detalle", expanded=False):
+            st.json({
+                'Region':       resultado_obj1['region'],
+                'Tipo_Ruta':    resultado_obj1['tipo_ruta'],
+                'Meses_Usados': resultado_obj1['meses_usados'],
+            })
+            st.markdown("##### Costo por Mes")
+            st.json(resultado_obj1['costo_por_mes'])
+            st.markdown("##### Viajes Promedio por Vehículo")
+            st.json(resultado_obj1['viajes_promedio'])
+            if resultado_obj1['detalle_por_mes']:
+                ultimo_mes = max(resultado_obj1['detalle_por_mes'].keys())
+                st.markdown(f"##### Detalle último mes ({NOMBRE_MES[ultimo_mes]})")
+                st.json(resultado_obj1['detalle_por_mes'][ultimo_mes])
+
     renderizar_objetivo1(resultado_obj1)
     st.markdown("---")
+
     # PASO 3 — PARÁMETROS USUARIO
-    st.markdown("### ⚙️ Paso 3 — Configurar Nuevo CenDis")
+    st.markdown("### Paso 3 — Configurar Nuevo CenDis")
+    st.caption("Introduzca los parametros para configurar el nuevo cendis")
     col_p1, col_p2 = st.columns(2)
     with col_p1:
         modo = st.radio(
@@ -1900,29 +1927,25 @@ def modulo_analisis_financiero(
             horizontal=True,
             key="fin_modo"
         )
-        ciudad_cendis = st.text_input(
+        ciudades_disponibles = sorted(CIUDADES_VENEZUELA.keys())
+        ciudad_cendis_sel = st.selectbox(
             "🏙️ Ciudad del nuevo CenDis:",
-            placeholder="Ej: Barcelona, Maturín...",
+            options=[""] + ciudades_disponibles,
+            format_func=lambda x: "Selecciona una ciudad..." if x == "" else x.title(),
             key="fin_ciudad_cendis"
         )
+        ciudad_cendis = ciudad_cendis_sel if ciudad_cendis_sel else ""
+
         if modo == "REGIÓN":
-        # Obtener región sugerida del Paso 2
-            lista_regiones = REGIONES_DIRECTAS + REGIONES_VIA_CCS + REGIONES_VIA_BQTO
-            region_sugerida = st.session_state.get('region_sugerida', lista_regiones[0])
-        
-        # Calcular índice
-            try:
-                idx_inicial = lista_regiones.index(region_sugerida)
-            except ValueError:
-                idx_inicial = 0
-        
-            region_o_estado = st.selectbox(
-                "📍 Región que atenderá:",
-                options=lista_regiones,
-                index=idx_inicial,  # ← Pre-selecciona la del Paso 2
-                key="fin_region_obj2",
-                help="Pre-seleccionada desde el Paso 2, pero puedes cambiarla"
+            region_paso3 = st.selectbox(
+                "📍 Región que atenderá: (debe coincidir con la región seleccionda del Paso 2)",
+                options=regiones_disponibles,
+                index=regiones_disponibles.index(st.session_state['region_sincronizada']),
+                key="region_paso3",
+                on_change=sync_desde_paso3
             )
+            region_o_estado = region_paso3  # ← fuente única de verdad
+
         else:
             estados_disponibles = sorted(
                 df_maestro['Estado'].dropna().unique().tolist()
@@ -1932,6 +1955,7 @@ def modulo_analisis_financiero(
                 options=estados_disponibles,
                 key="fin_estado_sel"
             )
+
         cendis_ref = st.selectbox(
             "🏭 CenDis de referencia:",
             options=['BQTO', 'CCS'],
@@ -1939,47 +1963,39 @@ def modulo_analisis_financiero(
         )
 
     with col_p2:
-        # ✅ El valor por defecto del % cambia según el CenDis seleccionado
         pct_default = 9.83 if cendis_ref == 'BQTO' else 8.62
-
         pct_gastos = st.number_input(
-            "⚙️ % Gastos/Ventas:",
+            "⚙️ % Gastos/Ventas: (usar punto (' . ' para marcar decimal · ej: 9.83)",
             min_value=0.0, max_value=30.0,
-            value=pct_default,   # ← Cambia automáticamente con el CenDis
+            value=pct_default,
             step=0.1,
-            help="Benchmark CCS: 8.62% | BQTO: 9.83%",
-            key=f"fin_pct_gastos_{cendis_ref}"  # ← Key dinámica para forzar el cambio
+            help="Benchmark CCS: 8.62% | BQTO: 9.83% — Streamlit requiere punto (.) como separador decimal",
+            key=f"fin_pct_gastos_{cendis_ref}"
         )
-    
+
     ratio_sug   = consolidado.get(cendis_ref, {}).get('Ratio_Acarreos_Kg', 0.0)
     kg_base_est = 0.0
     if modo == 'REGIÓN':
         df_tmp = df_maestro.copy()
         df_tmp['Region_C'] = df_tmp.apply(
-            lambda r: clasificar_region(
-                r.get('Ciudad',''), r.get('Estado','')
-            )[0], axis=1
+            lambda r: clasificar_region(r.get('Ciudad', ''), r.get('Estado', ''))[0], axis=1
         )
-        kg_base_est = df_tmp[
-            df_tmp['Region_C'] == region_o_estado
-        ]['Peso_KG'].sum()
+        kg_base_est = df_tmp[df_tmp['Region_C'] == region_o_estado]['Peso_KG'].sum()
     elif 'Estado' in df_maestro.columns:
         kg_base_est = df_maestro[
             df_maestro['Estado'].astype(str).str.upper().str.strip()
             == str(region_o_estado).upper().strip()
         ]['Peso_KG'].sum()
-    
-    viajes_sug = math.ceil(kg_base_est * ratio_sug) \
-        if kg_base_est > 0 and ratio_sug > 0 else 0
-    
-    # ✅ Solo mostrar el ratio si tiene valores reales
+
+    viajes_sug = math.ceil(kg_base_est * ratio_sug) if kg_base_est > 0 and ratio_sug > 0 else 0
+
     if ratio_sug > 0 and viajes_sug > 0:
         st.caption(
             f"💡 Ratio sugerido ({cendis_ref}): "
             f"{ratio_sug:.6f} viajes/kg → "
             f"**{viajes_sug} viajes/mes**"
         )
-    
+
     viajes_repo = st.number_input(
         "🔄 Viajes de reposición/mes:",
         min_value=0, max_value=200,
@@ -2000,6 +2016,7 @@ def modulo_analisis_financiero(
     if not ciudad_cendis:
         st.warning("⚠️ Ingresa la ciudad del nuevo CenDis.")
         return
+
     # PASO 4 — OBJETIVO 2
     with st.spinner("Calculando costo del nuevo CenDis..."):
         resultado_obj2, msg_obj2 = calcular_objetivo2(
@@ -2020,49 +2037,51 @@ def modulo_analisis_financiero(
     if resultado_obj2 is None:
         st.error(msg_obj2)
         return
-    with st.expander("🔍 Debug 5 — Objetivo 2 Detalle", expanded=False):
-        debug2 = resultado_obj2['debug']
-        st.markdown("##### Venta Base y Kg")
-        st.json({
-            'Modo':           modo,
-            'Region_Estado':  region_o_estado,
-            'Ciudad_CenDis':  ciudad_cendis,
-            'Venta_Base_USD': debug2.get('Venta_Base_USD', 0),
-            'Kg_Base':        debug2.get('Kg_Base', 0),
-        })
-        st.markdown("##### Gasto Operacional")
-        st.json(debug2.get('Gasto_Operacional', {}))
-        st.markdown("##### Reposición")
-        st.json(debug2.get('Reposicion', {}))
-        if modo == 'ESTADO':
-            st.markdown("##### Modo Estado")
-            st.json(debug2.get('modo_estado', {}))
-            if 'aviso' in debug2:
-                st.warning(debug2['aviso'])
-            if resultado_obj2.get('resultado_estado'):
-                df_cl = resultado_obj2['resultado_estado']['df_clientes']
-                if not df_cl.empty:
-                    st.markdown("##### Clientes con Flete Estimado")
-                    st.dataframe(
-                        df_cl[[
-                            'Id. Cliente', 'Ciudad', 'Estado',
-                            'Distancia_KM', 'Valor_USD',
-                            'Peso_KG', 'Flete_Estimado'
-                        ]].sort_values('Distancia_KM'),
-                        use_container_width=True,
-                        hide_index=True
-                    )
-        st.markdown("##### Resumen")
-        st.json(debug2.get('RESUMEN', {}))
-    st.markdown("### 🏗️ Paso 4 — Costo Mensual del Nuevo CenDis")
+    
+    if mostrar_debug:
+        with st.expander("🔍 Debug 5 — Objetivo 2 Detalle", expanded=False):
+            debug2 = resultado_obj2['debug']
+            st.markdown("##### Venta Base y Kg")
+            st.json({
+                'Modo':           modo,
+                'Region_Estado':  region_o_estado,
+                'Ciudad_CenDis':  ciudad_cendis,
+                'Venta_Base_USD': debug2.get('Venta_Base_USD', 0),
+                'Kg_Base':        debug2.get('Kg_Base', 0),
+            })
+            st.markdown("##### Gasto Operacional")
+            st.json(debug2.get('Gasto_Operacional', {}))
+            st.markdown("##### Reposición")
+            st.json(debug2.get('Reposicion', {}))
+            if modo == 'ESTADO':
+                st.markdown("##### Modo Estado")
+                st.json(debug2.get('modo_estado', {}))
+                if 'aviso' in debug2:
+                    st.warning(debug2['aviso'])
+                if resultado_obj2.get('resultado_estado'):
+                    df_cl = resultado_obj2['resultado_estado']['df_clientes']
+                    if not df_cl.empty:
+                        st.markdown("##### Clientes con Flete Estimado")
+                        st.dataframe(
+                            df_cl[[
+                                'Id. Cliente', 'Ciudad', 'Estado',
+                                'Distancia_KM', 'Valor_USD',
+                                'Peso_KG', 'Flete_Estimado'
+                            ]].sort_values('Distancia_KM'),
+                            use_container_width=True,
+                            hide_index=True
+                        )
+            st.markdown("##### Resumen")
+            st.json(debug2.get('RESUMEN', {}))
+    st.markdown("### Paso 4 — Costo Mensual del Nuevo CenDis")
     col_k1, col_k2, col_k3 = st.columns(3)
     with col_k1:
-        st.metric("💵 Venta Base",          f"${resultado_obj2['venta_base']:,.0f}")
+        st.metric("💵 Venta Base",          f"${fmt_num(resultado_obj2['venta_base'])}")
     with col_k2:
-        st.metric("⚙️ Gasto Operacional",   f"${resultado_obj2['gasto_operacional']:,.0f}",
-                  delta=f"{pct_gastos}% sobre ventas")
+        st.metric("⚙️ Gasto Operacional",   f"${fmt_num(resultado_obj2['gasto_operacional'])}",
+                  delta=f"{str(round(pct_gastos, 2)).replace('.', ',')}% sobre ventas")
     with col_k3:
-        st.metric("🔄 Costo Reposición",    f"${resultado_obj2['costo_reposicion']:,.0f}",
+        st.metric("🔄 Costo Reposición",    f"${fmt_num(resultado_obj2['costo_reposicion'])}",
                   delta=f"{int(viajes_repo)} viajes/mes")
     st.markdown("---")  # ← fuera de las columnas, correcto
     # PASO 5 — OBJETIVO 3
@@ -2073,27 +2092,29 @@ def modulo_analisis_financiero(
     if resultado_obj3 is None:
         st.error(msg_obj3)
         return
-    with st.expander("🔍 Debug 6 — Objetivo 3 Detalle", expanded=False):
-        debug3 = resultado_obj3['debug']
-        st.markdown("##### Comparación Base")
-        st.json(debug3.get('COMPARACION_BASE', {}))
-        st.markdown("##### Acumulado Muestra")
-        st.json(debug3.get('ACUMULADO_MUESTRA', {}))
-    st.markdown("### 📊 Paso 5 — Comparación Red Actual vs Propuesta")
+    
+    if mostrar_debug:
+        with st.expander("🔍 Debug 6 — Objetivo 3 Detalle", expanded=False):
+            debug3 = resultado_obj3['debug']
+            st.markdown("##### Comparación Base")
+            st.json(debug3.get('COMPARACION_BASE', {}))
+            st.markdown("##### Acumulado Muestra")
+            st.json(debug3.get('ACUMULADO_MUESTRA', {}))
+        st.markdown("### Paso 5 — Comparación Red Actual vs Propuesta")
     col_c1, col_c2 = st.columns(2)
     with col_c1:
-        st.metric("🏭 Red Actual/Mes",    f"${resultado_obj3['costo_actual_mes']:,.0f}")
+        st.metric("🏭 Red Actual/Mes",    f"${fmt_num(resultado_obj3['costo_actual_mes'])}")
     with col_c2:
-        st.metric("🏗️ Red Propuesta/Mes", f"${resultado_obj3['costo_propuesto_mes']:,.0f}")
+        st.metric("🏗️ Red Propuesta/Mes", f"${fmt_num(resultado_obj3['costo_propuesto_mes'])}")
     # Gráfico comparativo mensual — Barras agrupadas
-    st.markdown("#### 📊 Costo Mensual — Red Actual vs Red Propuesta")
+    st.markdown("#### Costo Mensual — Red Actual vs Red Propuesta")
     fig = go.Figure()
     fig.add_trace(go.Bar(
         name='🏭 Red Actual',
         x=['Costo Mensual'],
         y=[resultado_obj3['costo_actual_mes']],
         marker_color='#E60F29',
-        text=[f"${resultado_obj3['costo_actual_mes']:,.0f}"],
+        text=[f"${fmt_num(resultado_obj3['costo_actual_mes'])}"],
         textposition='outside',
     ))
     fig.add_trace(go.Bar(

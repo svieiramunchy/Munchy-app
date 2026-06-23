@@ -51,23 +51,45 @@ st.sidebar.markdown("---")
 
 munchy_style = """
 <style>
-    .stApp { background-color: #0F2260 !important; }
-    h1, h2, h3, h4, h5, h6, p, label, span, .stMarkdown { color: #FFFFFF !important; }
-    section[data-testid="stSidebar"] { background-color: #0A1846 !important; }
-    div.stButton > button {
-        background-color: rgba(230, 15, 41, 0.7) !important;
-        color: #FFFFFF !important;
-        border: 1px solid rgba(230, 15, 41, 0.9) !important;
-        border-radius: 6px !important;
-        font-weight: bold !important;
-    }
-    div.stButton > button:hover {
-        background-color: rgba(230, 15, 41, 1.0) !important;
-        border-color: #FFFFFF !important;
-    }
+.stApp { background-color: #0F2260 !important; }
+h1, h2, h3, h4, h5, h6, p, label, span, .stMarkdown { color: #FFFFFF !important; }
+section[data-testid="stSidebar"] { background-color: #0A1846 !important; }
+
+/* ── FILE UPLOADER ─────────────────────────────────────── */
+[data-testid="stFileUploader"] {
+    background-color: rgba(255, 255, 255, 0.05) !important;
+    border: 1.5px dashed rgba(255, 255, 255, 0.4) !important;
+    border-radius: 8px !important;
+    padding: 8px !important;
+}
+[data-testid="stFileUploader"] label {
+    color: #FFFFFF !important;
+}
+[data-testid="stFileUploader"] p,
+[data-testid="stFileUploader"] span,
+[data-testid="stFileUploader"] small {
+    color: #CCCCCC !important;
+}
+[data-testid="stFileUploadDropzone"] {
+    background-color: rgba(255, 255, 255, 0.03) !important;
+    border: none !important;
+}
+
+/* ── BOTONES ───────────────────────────────────────────── */
+div.stButton > button {
+    background-color: rgba(230, 15, 41, 0.7) !important;
+    color: #FFFFFF !important;
+    border: 1px solid rgba(230, 15, 41, 0.9) !important;
+    border-radius: 6px !important;
+    font-weight: bold !important;
+}
+div.stButton > button:hover {
+    background-color: rgba(230, 15, 41, 1.0) !important;
+    border-color: #FFFFFF !important;
+}
 </style>
 """
-st.markdown(munchy_style, unsafe_allow_html=True)  
+st.markdown(munchy_style, unsafe_allow_html=True)
 
 # =====================================================================
 # 2. PANEL LATERAL CONTROLES

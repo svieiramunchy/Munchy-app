@@ -51,6 +51,13 @@ st.sidebar.markdown("---")
 
 munchy_style = """
 <style>
+/* ── IMPORTAR FUENTE INTER ───────────────────────────────── */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+/* ── APLICAR A TODA LA APP ───────────────────────────────── */
+html, body, .stApp, .stApp * {
+    font-family: 'Inter', sans-serif !important;
+}
 /* ── FONDO PRINCIPAL Y SIDEBAR — siempre fijos ────────────── */
 .stApp { background-color: #0F2260 !important; }
 .stApp h1, .stApp h2, .stApp h3, .stApp h4, .stApp h5, .stApp h6,
@@ -1009,28 +1016,192 @@ def convertir_df_a_excel(df):
 def check_password():
     if st.session_state.get("autenticado"):
         return True
-    
-    st.markdown("## 🔐 Acceso Restringido — Munchy")
-    usuario = st.text_input("Usuario:", key="login_user")
-    clave   = st.text_input("Contraseña:", type="password", key="login_pass")
-    
-    USUARIOS = {
-        "logistica":  "munchy_log_2026",
-        "gerencia":   "munchy_ger_2026",
-        "admin":      "munchy_admin_2026",
-    }
-    
-    if st.button("Entrar"):
-        if USUARIOS.get(usuario) == clave:
-            st.session_state["autenticado"] = True
-            st.rerun()
-        else:
-            st.error("❌ Usuario o contraseña incorrectos")
-    
-    return False
 
-if not check_password():
-    st.stop()
+    # ── Ocultar sidebar completamente en el login ──────────────
+    st.markdown("""
+    <style>
+        section[data-testid="stSidebar"] { display: none !important; }
+        header[data-testid="stHeader"]   { display: none !important; }
+        .stApp { background-color: #0F2260 !important; }
+
+        /* ── Centrar todo el contenido del login ── */
+        .login-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 90vh;
+            padding: 20px;
+        }
+
+        /* ── Logo / encabezado ── */
+        .login-header {
+            text-align: center;
+            margin-bottom: 12px;
+        }
+        .login-header .app-name {
+            color: #FFFFFF;
+            font-size: 1.25rem;
+            font-weight: 700;
+            margin-top: 12px;
+            letter-spacing: 0.5px;
+        }
+        .login-header .app-subtitle {
+            color: #A8B8D8;
+            font-size: 0.95rem;
+            margin-top: 4px;
+            line-height: 1.5;
+        }
+
+        /* ── Divider ── */
+        .login-divider {
+            width: 100%;
+            max-width: 480px;
+            border: none;
+            border-top: 1px solid rgba(255,255,255,0.15);
+            margin: 28px 0;
+        }
+
+        /* ── Tarjeta del formulario ── */
+        .login-card {
+            background-color: #162970;
+            border-radius: 16px;
+            padding: 36px 40px 32px 40px;
+            width: 100%;
+            max-width: 480px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.35);
+        }
+        .login-card h2 {
+            color: #FFFFFF !important;
+            font-size: 1.75rem !important;
+            font-weight: 700 !important;
+            margin-bottom: 8px !important;
+        }
+        .login-card .subtitle {
+            color: #A8B8D8;
+            font-size: 0.92rem;
+            margin-bottom: 28px;
+        }
+
+        /* ── Labels de los campos ── */
+        .field-label {
+            color: #FFFFFF;
+            font-size: 0.88rem;
+            font-weight: 600;
+            margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        /* ── Inputs ── */
+        .stApp .login-card input[type="text"],
+        .stApp .login-card input[type="password"] {
+            background-color: #1E3A8A !important;
+            border: none !important;
+            border-radius: 10px !important;
+            color: #FFFFFF !important;
+            padding: 12px 16px !important;
+            font-size: 0.95rem !important;
+        }
+        div[data-testid="stTextInput"] input {
+            background-color: #1E3580 !important;
+            border: none !important;
+            border-radius: 10px !important;
+            color: #FFFFFF !important;
+        }
+        div[data-testid="stTextInput"] input::placeholder {
+            color: #7A90B8 !important;
+        }
+        div[data-testid="stTextInput"] > div {
+            background-color: #1E3580 !important;
+            border-radius: 10px !important;
+            border: none !important;
+        }
+
+        /* ── Botón Entrar ── */
+        .login-card div.stButton > button {
+            background: linear-gradient(135deg, #E60F29 0%, #B00D20 100%) !important;
+            color: #FFFFFF !important;
+            border: none !important;
+            border-radius: 10px !important;
+            font-weight: 700 !important;
+            font-size: 1rem !important;
+            padding: 12px 0 !important;
+            width: 100% !important;
+            margin-top: 8px !important;
+            letter-spacing: 0.5px !important;
+            transition: opacity 0.2s !important;
+        }
+        .login-card div.stButton > button:hover {
+            opacity: 0.88 !important;
+            border: none !important;
+        }
+    </style>
+    """, unsafe_allow_html=True)
+
+    # ── Layout centrado ──────────────────────────────────────────
+    _, col_center, _ = st.columns([1, 1.4, 1])
+
+    with col_center:
+
+        # ── Logo ──────────────────────────────────────────────────
+        ruta_logo = "Munchy logo.png"
+        if os.path.exists(ruta_logo):
+            st.image(ruta_logo, width=180)
+        else:
+            st.markdown("<div style='text-align:center; font-size:2.5rem;'>🔐</div>",
+                        unsafe_allow_html=True)
+
+        st.markdown("""
+            <div style='text-align:center; margin-top:10px;'>
+                <div style='color:#FFFFFF; font-size:1.15rem; font-weight:700;
+                            letter-spacing:0.5px;'>Munchy-DSS</div>
+                <div style='color:#A8B8D8; font-size:0.9rem; margin-top:4px;
+                            line-height:1.5;'>Sistema Inteligente de Soporte a la<br>Decisión Logística</div>
+            </div>
+        """, unsafe_allow_html=True)
+
+        st.markdown("<hr style='border:none; border-top:1px solid rgba(255,255,255,0.15); "
+                    "margin:28px 0;'>", unsafe_allow_html=True)
+
+        # ── Tarjeta ───────────────────────────────────────────────
+        with st.container():
+            st.markdown("<div class='login-card'>", unsafe_allow_html=True)
+
+            st.markdown("## Ingreso al Sistema")
+            st.markdown("<p style='color:#A8B8D8; font-size:0.92rem; "
+                        "margin-bottom:24px;'>Por favor, introduzca sus credenciales corporativas.</p>",
+                        unsafe_allow_html=True)
+
+            st.markdown("<div class='field-label'>👤 Usuario Corporativo</div>",
+                        unsafe_allow_html=True)
+            usuario = st.text_input("", placeholder="ej. carlos.rodriguez",
+                                    key="login_user", label_visibility="collapsed")
+
+            st.markdown("<div class='field-label' style='margin-top:16px;'>🔒 Contraseña</div>",
+                        unsafe_allow_html=True)
+            clave = st.text_input("", type="password", placeholder="••••••",
+                                  key="login_pass", label_visibility="collapsed")
+
+            st.markdown("<div style='margin-top:24px;'>", unsafe_allow_html=True)
+
+            USUARIOS = {
+                "logistica": "munchy_log_2026",
+                "gerencia":  "munchy_ger_2026",
+                "admin":     "munchy_admin_2026",
+            }
+
+            if st.button("Entrar", use_container_width=True):
+                if USUARIOS.get(usuario) == clave:
+                    st.session_state["autenticado"] = True
+                    st.rerun()
+                else:
+                    st.error("❌ Usuario o contraseña incorrectos")
+
+            st.markdown("</div></div>", unsafe_allow_html=True)
+
+    return False
 # =====================================================================
 # 11. ORQUESTADOR PRINCIPAL
 # =====================================================================

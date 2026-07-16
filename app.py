@@ -51,13 +51,6 @@ st.sidebar.markdown("---")
 
 munchy_style = """
 <style>
-/* ── IMPORTAR FUENTE INTER ───────────────────────────────── */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
-
-/* ── APLICAR A TODA LA APP ───────────────────────────────── */
-html, body, .stApp, .stApp * {
-    font-family: 'Inter', sans-serif !important;
-}
 /* ── FONDO PRINCIPAL Y SIDEBAR — siempre fijos ────────────── */
 .stApp { background-color: #0F2260 !important; }
 .stApp h1, .stApp h2, .stApp h3, .stApp h4, .stApp h5, .stApp h6,
@@ -77,7 +70,6 @@ header[data-testid="stHeader"] {
 }
 
 /* ── ELEMENTOS ADAPTABLES AL TEMA (Light/Dark Mode) ──────── */
-/* Contenido interno del File Uploader, Spinners y Botón Descarga */
 .stApp [data-testid="stFileUploader"] p,
 .stApp [data-testid="stFileUploader"] span,
 .stApp [data-testid="stFileUploader"] small,
@@ -94,7 +86,6 @@ header[data-testid="stHeader"] {
 }
 
 /* ── TÍTULOS DE LOS FILE UPLOADERS — siempre blancos ──────── */
-/* Esto aísla el título del File Uploader para que no sea negro en Light Mode */
 .stApp [data-testid="stFileUploader"] > label,
 .stApp [data-testid="stFileUploader"] > label p,
 .stApp [data-testid="stFileUploader"] > label span,
@@ -113,6 +104,67 @@ div.stButton > button {
 div.stButton > button:hover {
     background-color: rgba(230, 15, 41, 1.0) !important;
     border-color: #FFFFFF !important;
+}
+/* ── HERO SECTION PRINCIPAL ─────────────────────────────── */
+.hero-box {
+    background: linear-gradient(135deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02));
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 18px;
+    padding: 26px 30px 22px 30px;
+    margin-bottom: 20px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.18);
+}
+
+.hero-title {
+    font-size: 2.1rem;
+    font-weight: 800;
+    color: #FFFFFF;
+    line-height: 1.1;
+    margin-bottom: 8px;
+}
+
+.hero-subtitle {
+    font-size: 1rem;
+    color: #AFC0E8;
+    margin: 0;
+}
+
+/* ── KPIs / MÉTRICAS ────────────────────────────────────── */
+div[data-testid="stMetric"] {
+    background: linear-gradient(180deg, rgba(255,255,255,0.05), rgba(255,255,255,0.025));
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 18px;
+    padding: 18px 18px 16px 18px !important;
+    min-height: 135px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.16);
+}
+
+div[data-testid="stMetricLabel"] {
+    color: #AFC0E8 !important;
+    font-size: 0.95rem !important;
+    font-weight: 600 !important;
+}
+
+div[data-testid="stMetricValue"] {
+    color: #FFFFFF !important;
+    font-size: 2rem !important;
+    font-weight: 800 !important;
+}
+
+div[data-testid="stMetricDelta"] {
+    color: #7EE787 !important;
+    font-weight: 600 !important;
+}
+
+/* ── TABS MÁS LIMPIAS ───────────────────────────────────── */
+button[data-baseweb="tab"] {
+    border-radius: 10px 10px 0 0 !important;
+    padding: 10px 16px !important;
+}
+
+button[data-baseweb="tab"][aria-selected="true"] {
+    background-color: rgba(255,255,255,0.06) !important;
+    border-bottom: 2px solid #E60F29 !important;
 }
 </style>
 """
@@ -599,26 +651,27 @@ def mostrar_tabla_cobertura(df_asignado, nodos):
 
     resumen_nodos = []
     total_clientes = 0
-    total_vol      = 0.0
+    total_vol = 0.0
 
     for nodo in nodos:
         df_n = df_asignado[df_asignado['Nodo_Asignado'] == nodo['nombre']]
         if df_n.empty:
             continue
-        vol  = round(df_n['Peso_KG'].sum(), 1)
-        val  = round(df_n['Valor_USD'].sum(), 2)
-        flt  = round(df_n['Costo_Flete_Total'].sum(), 2) if 'Costo_Flete_Total' in df_n.columns else 0.0
+
+        vol = round(df_n['Peso_KG'].sum(), 1)
+        val = round(df_n['Valor_USD'].sum(), 2)
+
         total_clientes += len(df_n)
-        total_vol      += vol
+        total_vol += vol
+
         resumen_nodos.append({
-            'Nodo':               nodo['nombre'],
-            'Tipo':               nodo['tipo'],
-            'Latitud':            nodo['lat'],
-            'Longitud':           nodo['lon'],
+            'Nodo': nodo['nombre'],
+            'Tipo': nodo['tipo'],
+            'Latitud': nodo['lat'],
+            'Longitud': nodo['lon'],
             'Clientes Asignados': len(df_n),
             'Volumen Total (Kg)': fmt_num(vol, 1),
-            'Valor Total (USD)':  fmt_num(val, 2),
-            'Flete Acum. (USD)':  fmt_num(flt, 2),
+            'Valor Total (USD)': fmt_num(val, 2),
         })
 
     if not resumen_nodos:
@@ -627,9 +680,9 @@ def mostrar_tabla_cobertura(df_asignado, nodos):
 
     col1, col2, col3 = st.columns(3)
     with col1:
-        st.metric("🏭Total Nodos Activos",  f"{len(resumen_nodos)}")
+        st.metric("🏭Total Nodos Activos", f"{len(resumen_nodos)}")
     with col2:
-        st.metric("👥Clientes Cubiertos",    f"{total_clientes}")
+        st.metric("👥Clientes Cubiertos", f"{total_clientes}")
     with col3:
         st.metric("📨Volumen Cubierto (Kg)", fmt_num(total_vol, 1))
 
@@ -638,7 +691,7 @@ def mostrar_tabla_cobertura(df_asignado, nodos):
         pd.DataFrame(resumen_nodos)[[
             'Nodo', 'Tipo', 'Latitud', 'Longitud',
             'Clientes Asignados', 'Volumen Total (Kg)',
-            'Valor Total (USD)', 'Flete Acum. (USD)'
+            'Valor Total (USD)'
         ]],
         use_container_width=True, hide_index=True
     )
@@ -648,21 +701,28 @@ def mostrar_tabla_cobertura(df_asignado, nodos):
         df_n = df_asignado[df_asignado['Nodo_Asignado'] == nodo['nombre']]
         if df_n.empty:
             continue
+
         with st.expander(f"{nodo['nombre']} — {len(df_n)} clientes | {fmt_num(df_n['Peso_KG'].sum(), 1)} Kg | ${fmt_num(df_n['Valor_USD'].sum(), 2)}"):
-            cols_det = [c for c in ['Id. Cliente','Nombre de Cliente','Ciudad','Estado',
-                        'Peso_KG','Valor_USD','Costo_Flete_Total','Distancia_Nodo']
-                        if c in df_n.columns]
+            cols_det = [c for c in [
+                'Id. Cliente', 'Nombre de Cliente', 'Ciudad', 'Estado',
+                'Peso_KG', 'Valor_USD', 'Distancia_Nodo'
+            ] if c in df_n.columns]
+
             df_det = df_n[cols_det].copy()
-            if 'Peso_KG'           in df_det.columns: df_det['Peso_KG']           = df_det['Peso_KG'].apply(lambda x: fmt_num(x, 1))
-            if 'Valor_USD'         in df_det.columns: df_det['Valor_USD']         = df_det['Valor_USD'].apply(lambda x: fmt_num(x, 2))
-            if 'Costo_Flete_Total' in df_det.columns: df_det['Costo_Flete_Total'] = df_det['Costo_Flete_Total'].apply(lambda x: fmt_num(x, 2))
-            if 'Distancia_Nodo'    in df_det.columns: df_det['Distancia_Nodo']    = df_det['Distancia_Nodo'].apply(lambda x: fmt_num(x, 4))
+
+            if 'Peso_KG' in df_det.columns:
+                df_det['Peso_KG'] = df_det['Peso_KG'].apply(lambda x: fmt_num(x, 1))
+            if 'Valor_USD' in df_det.columns:
+                df_det['Valor_USD'] = df_det['Valor_USD'].apply(lambda x: fmt_num(x, 2))
+            if 'Distancia_Nodo' in df_det.columns:
+                df_det['Distancia_Nodo'] = df_det['Distancia_Nodo'].apply(lambda x: fmt_num(x, 4))
+
             df_det = df_det.rename(columns={
-                'Peso_KG':           'Volumen (Kg)',
-                'Valor_USD':         'Valor (USD)',
-                'Costo_Flete_Total': 'Flete Gandola (USD)',
-                'Distancia_Nodo':    'Distancia (°)'
+                'Peso_KG': 'Volumen (Kg)',
+                'Valor_USD': 'Valor (USD)',
+                'Distancia_Nodo': 'Distancia (°)'
             }).reset_index(drop=True)
+
             df_det.index += 1
             st.dataframe(df_det, use_container_width=True)
 
@@ -1020,68 +1080,12 @@ def check_password():
     # ── Ocultar sidebar completamente en el login ──────────────
     st.markdown("""
     <style>
+        /* ── Ocultar sidebar y header en el login ── */
         section[data-testid="stSidebar"] { display: none !important; }
         header[data-testid="stHeader"]   { display: none !important; }
+        
+        /* ── Fondo principal ── */
         .stApp { background-color: #0F2260 !important; }
-
-        /* ── Centrar todo el contenido del login ── */
-        .login-wrapper {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            min-height: 90vh;
-            padding: 20px;
-        }
-
-        /* ── Logo / encabezado ── */
-        .login-header {
-            text-align: center;
-            margin-bottom: 12px;
-        }
-        .login-header .app-name {
-            color: #FFFFFF;
-            font-size: 1.25rem;
-            font-weight: 700;
-            margin-top: 12px;
-            letter-spacing: 0.5px;
-        }
-        .login-header .app-subtitle {
-            color: #A8B8D8;
-            font-size: 0.95rem;
-            margin-top: 4px;
-            line-height: 1.5;
-        }
-
-        /* ── Divider ── */
-        .login-divider {
-            width: 100%;
-            max-width: 480px;
-            border: none;
-            border-top: 1px solid rgba(255,255,255,0.15);
-            margin: 28px 0;
-        }
-
-        /* ── Tarjeta del formulario ── */
-        .login-card {
-            background-color: #162970;
-            border-radius: 16px;
-            padding: 36px 40px 32px 40px;
-            width: 100%;
-            max-width: 480px;
-            box-shadow: 0 8px 32px rgba(0,0,0,0.35);
-        }
-        .login-card h2 {
-            color: #FFFFFF !important;
-            font-size: 1.75rem !important;
-            font-weight: 700 !important;
-            margin-bottom: 8px !important;
-        }
-        .login-card .subtitle {
-            color: #A8B8D8;
-            font-size: 0.92rem;
-            margin-bottom: 28px;
-        }
 
         /* ── Labels de los campos ── */
         .field-label {
@@ -1094,33 +1098,39 @@ def check_password():
             gap: 6px;
         }
 
-        /* ── Inputs ── */
-        .stApp .login-card input[type="text"],
-        .stApp .login-card input[type="password"] {
-            background-color: #1E3A8A !important;
-            border: none !important;
-            border-radius: 10px !important;
-            color: #FFFFFF !important;
-            padding: 12px 16px !important;
-            font-size: 0.95rem !important;
-        }
-        div[data-testid="stTextInput"] input {
+        /* ── Contenedor principal del Input ── */
+        div[data-baseweb="input"] {
             background-color: #1E3580 !important;
-            border: none !important;
             border-radius: 10px !important;
+            border: none !important;
+            overflow: hidden !important;
+        }
+
+        /* ── Forzar fondo transparente a todos los sub-elementos (input, div del ojo, botón) ── */
+        div[data-baseweb="input"] * {
+            background-color: transparent !important;
+        }
+
+        /* ── Estilos del texto dentro del Input ── */
+        div[data-testid="stTextInput"] input {
             color: #FFFFFF !important;
         }
         div[data-testid="stTextInput"] input::placeholder {
             color: #7A90B8 !important;
         }
-        div[data-testid="stTextInput"] > div {
-            background-color: #1E3580 !important;
-            border-radius: 10px !important;
+
+        /* ── Botón del ojo ── */
+        div[data-testid="stTextInput"] button {
             border: none !important;
+            color: #A8B8D8 !important;
+            box-shadow: none !important;
+        }
+        div[data-testid="stTextInput"] button:hover {
+            color: #FFFFFF !important;
         }
 
-        /* ── Botón Entrar ── */
-        .login-card div.stButton > button {
+        /* ── Botón Entrar (Global, sin .login-card) ── */
+        div.stButton > button {
             background: linear-gradient(135deg, #E60F29 0%, #B00D20 100%) !important;
             color: #FFFFFF !important;
             border: none !important;
@@ -1133,12 +1143,12 @@ def check_password():
             letter-spacing: 0.5px !important;
             transition: opacity 0.2s !important;
         }
-        .login-card div.stButton > button:hover {
+        div.stButton > button:hover {
             opacity: 0.88 !important;
             border: none !important;
-        }
+        }       
     </style>
-    """, unsafe_allow_html=True)
+""", unsafe_allow_html=True)
 
     # ── Layout centrado ──────────────────────────────────────────
     _, col_center, _ = st.columns([1, 1.4, 1])
@@ -1148,7 +1158,9 @@ def check_password():
         # ── Logo ──────────────────────────────────────────────────
         ruta_logo = "Munchy logo.png"
         if os.path.exists(ruta_logo):
-            st.image(ruta_logo, width=180)
+            _, logo_col, _ = st.columns([1, 2, 1])
+            with logo_col:
+                st.image(ruta_logo, use_container_width=True)
         else:
             st.markdown("<div style='text-align:center; font-size:2.5rem;'>🔐</div>",
                         unsafe_allow_html=True)
@@ -1158,7 +1170,7 @@ def check_password():
                 <div style='color:#FFFFFF; font-size:1.15rem; font-weight:700;
                             letter-spacing:0.5px;'>Munchy-DSS</div>
                 <div style='color:#A8B8D8; font-size:0.9rem; margin-top:4px;
-                            line-height:1.5;'>Sistema Inteligente de Soporte a la<br>Decisión Logística</div>
+                            line-height:1.5;'>Sistema Inteligente de Soporte para la Evaluación de <br> Nuevos Cendis</div>
             </div>
         """, unsafe_allow_html=True)
 
@@ -1166,51 +1178,51 @@ def check_password():
                     "margin:28px 0;'>", unsafe_allow_html=True)
 
         # ── Tarjeta ───────────────────────────────────────────────
-        with st.container():
-            st.markdown("<div class='login-card'>", unsafe_allow_html=True)
+        st.markdown("## Ingreso al Sistema")
+        st.markdown("<p style='color:#A8B8D8; font-size:0.92rem; "
+                    "margin-bottom:24px;'>Por favor, introduzca sus credenciales corporativas.</p>",
+                    unsafe_allow_html=True)
 
-            st.markdown("## Ingreso al Sistema")
-            st.markdown("<p style='color:#A8B8D8; font-size:0.92rem; "
-                        "margin-bottom:24px;'>Por favor, introduzca sus credenciales corporativas.</p>",
-                        unsafe_allow_html=True)
+        st.markdown("<div class='field-label'>👤 Usuario Corporativo</div>",
+                    unsafe_allow_html=True)
+        usuario = st.text_input("", placeholder="ej. carlos.rodriguez",
+                                key="login_user", label_visibility="collapsed")
 
-            st.markdown("<div class='field-label'>👤 Usuario Corporativo</div>",
-                        unsafe_allow_html=True)
-            usuario = st.text_input("", placeholder="ej. carlos.rodriguez",
-                                    key="login_user", label_visibility="collapsed")
+        st.markdown("<div class='field-label' style='margin-top:16px;'>🔒 Contraseña</div>",
+                    unsafe_allow_html=True)
+        clave = st.text_input("", type="password", placeholder="••••••",
+                              key="login_pass", label_visibility="collapsed")
 
-            st.markdown("<div class='field-label' style='margin-top:16px;'>🔒 Contraseña</div>",
-                        unsafe_allow_html=True)
-            clave = st.text_input("", type="password", placeholder="••••••",
-                                  key="login_pass", label_visibility="collapsed")
+        st.markdown("<div style='margin-top:24px;'>", unsafe_allow_html=True)
 
-            st.markdown("<div style='margin-top:24px;'>", unsafe_allow_html=True)
+        USUARIOS = {
+            "logistica": "munchy_log_2026",
+            "gerencia":  "munchy_ger_2026",
+            "admin":     "munchy_admin_2026",
+        }
 
-            USUARIOS = {
-                "logistica": "munchy_log_2026",
-                "gerencia":  "munchy_ger_2026",
-                "admin":     "munchy_admin_2026",
-            }
+        if st.button("Entrar", use_container_width=True):
+            if USUARIOS.get(usuario) == clave:
+                st.session_state["autenticado"] = True
+                st.rerun()
+            else:
+                st.error("❌ Usuario o contraseña incorrectos")
 
-            if st.button("Entrar", use_container_width=True):
-                if USUARIOS.get(usuario) == clave:
-                    st.session_state["autenticado"] = True
-                    st.rerun()
-                else:
-                    st.error("❌ Usuario o contraseña incorrectos")
-
-            st.markdown("</div></div>", unsafe_allow_html=True)
+        st.markdown("</div>", unsafe_allow_html=True)
 
     return False
 # =====================================================================
 # 11. ORQUESTADOR PRINCIPAL
 # =====================================================================
-# =====================================================================
-# 11. ORQUESTADOR PRINCIPAL
-# =====================================================================
 def main():
-    st.title(" Gemelo Digital Logístico - Munchy")
-    st.markdown("Análisis Geográfico de Clientes y Financiero para Nuevos Cendis")
+    st.markdown("""
+<div class="hero-box">
+    <div class="hero-title">Gemelo Digital Logístico - Munchy</div>
+    <div class="hero-subtitle">
+        Análisis geográfico de clientes y evaluación financiera para nuevos CenDis
+    </div>
+</div>
+""", unsafe_allow_html=True)
     modalidad, nombre_p, lat_p, lon_p, lista_cendis_existentes, radio_kernel = \
         modulo_controles_simulacion()
     tab_geo, tab_fin = st.tabs([
@@ -1220,7 +1232,9 @@ def main():
 
     # ================================================================
     with tab_geo:
+        st.markdown('<div class="section-card">', unsafe_allow_html=True)
         st.subheader("Carga de Data Maestra Unificada")
+        st.caption("Sube el archivo maestro consolidado para activar el análisis geográfico y financiero.")
         archivo_unico = st.file_uploader(
             "Sube el archivo maestro de Excel (.xlsx)",
             type=['xlsx'],
@@ -1586,6 +1600,8 @@ def main():
                 archivo_maestro         = st.session_state.get('archivo_maestro', None),
             )
 
+if not check_password():
+    st.stop()
+
 if __name__ == "__main__":
     main()
-    

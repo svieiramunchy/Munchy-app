@@ -133,10 +133,12 @@ div.stButton > button:hover {
 div[data-testid="stMetric"] {
     background: linear-gradient(180deg, rgba(255,255,255,0.05), rgba(255,255,255,0.025));
     border: 1px solid rgba(255,255,255,0.08);
+    border-left: 3px solid #E60F29 !important;
     border-radius: 18px;
     padding: 18px 18px 16px 18px !important;
     min-height: 135px;
     box-shadow: 0 8px 24px rgba(0,0,0,0.16);
+    background-color: #1A3A7A !important;
 }
 
 div[data-testid="stMetricLabel"] {

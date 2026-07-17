@@ -1820,9 +1820,10 @@ def modulo_analisis_financiero(
     def sync_desde_paso3():
         st.session_state['region_sincronizada'] = st.session_state['region_paso3']
 
-    # PASO 2 — OBJETIVO 1
+    # PASO 2 — OBJETIVO 
     st.markdown("### Paso 2 — Costo Actual de la Red")
-    col_r1, col_r2, col_r3 = st.columns(3)
+    col_r1 = st.columns(1)[0]
+    
     with col_r1:
         region_paso2 = st.selectbox(
             "📍 Región a analizar:",
@@ -1831,34 +1832,18 @@ def modulo_analisis_financiero(
             key="region_paso2",
             on_change=sync_desde_paso2
         )
-
+    
     st.session_state['region_sugerida'] = region_paso2
-    value=region_paso2 in REGIONES_VIA_CCS + REGIONES_VIA_BQTO,
     region = region_paso2
-
-    with col_r2:
-        pasa_cendis = st.toggle(
-            "¿Hoy pasa por CenDis?",
-            value=False,
-            key="fin_pasa_cendis"
-        )
-    with col_r3:
-        cual_cendis = None
-        if pasa_cendis:
-            cual_cendis = st.selectbox(
-                "¿Cuál CenDis?",
-                options=['CCS', 'BQTO'],
-                key="fin_cual_cendis"
-            )
-
+    
     resultado_obj1, msg_obj1 = calcular_costo_actual_region(
         region          = region_paso2,
         df_viajes       = df_viajes,
         tabs_co         = tabs_co,
         tab_extra       = tabs,
         consolidado     = consolidado,
-        pasa_por_cendis = pasa_cendis,
-        cual_cendis     = cual_cendis,
+        pasa_por_cendis = False,
+        cual_cendis     = None,
     )
     if resultado_obj1 is None:
         st.error(msg_obj1)

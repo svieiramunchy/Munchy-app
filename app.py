@@ -1115,10 +1115,11 @@ def check_password():
 
         /* ── Estilos del texto dentro del Input ── */
         div[data-testid="stTextInput"] input {
-            color: #FFFFFF !important;
+        color: var(--text-color) !important;
+        -webkit-text-fill-color: var(--text-color) !important;
         }
         div[data-testid="stTextInput"] input::placeholder {
-            color: #7A90B8 !important;
+        color: rgba(0, 0, 0, 0.45) !important;
         }
 
         /* ── Botón del ojo ── */
